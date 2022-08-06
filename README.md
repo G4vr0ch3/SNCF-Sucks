@@ -2,6 +2,8 @@
 
 A small bot to demonstrate how the french railway system sucks.
 
+> :warning: You might find in the source code my API key for the SNCF API, please use your own as it is limited. (creating one is fairly easy !)
+
 ## Why ?
 
 I travel a lot, be it for work or pleasure, and often find my day ruined by the terrible traveling experience proposed by the SNCF (the french railway company).  
@@ -9,6 +11,7 @@ I wasn't sure the SNCF was this terrible until I found myself having troubles wi
 
 To draw a small yet demonstrative comparison :
 | | SNCF | AirFrance |
+| :-: | :-: | :-: |
 | Scenario | I would say that at least 1 in 3 of the trains I took to travel was delay. | Once delayed in the 7 flights I had with the company |
 | Ticket price | 25e to 86e with a 75% discount lucky me. | 106e for the jurney in question. (one-way ticket) |
 | Delay | This goes from insignificant (5 minutes) to pretty long (1 to 3 hours) and even goes as far as requiring to pay for a taxi to get home because it was to late to catch another train. | 4 hours |
