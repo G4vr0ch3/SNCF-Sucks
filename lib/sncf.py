@@ -1,20 +1,9 @@
 import json
 import urllib.request as request
 from datetime import datetime, timedelta
+from prints import success, info, warning, fail
 
 pd, it, jt, total_delay, deleted, failure = 0, 0, 0, 0, 0, False
-
-def info(text):
-    print('[*] \033[96m',text, '\033[0m')
-
-def fail(text):
-    print('[!] \033[91m',text, '\033[0m')
-
-def success(text):
-    print('[+] \033[92m',text, '\033[0m')
-
-def warning(text):
-    print('[+] \033[93m',text, '\033[0m')
 
 def result(count, delay, deleted):
     min = delay%60
