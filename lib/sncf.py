@@ -2,7 +2,7 @@ import json
 import urllib.request as request
 from datetime import datetime, timedelta
 
-pd, it, jt, tot, deleted, failure = 0, 0, 0, 0, 0, False
+pd, it, jt, total_delay, deleted, failure = 0, 0, 0, 0, 0, False
 
 def info(text):
     print('[*] \033[96m',text, '\033[0m')
@@ -30,7 +30,8 @@ dataset = "coverage/sncf/disruptions/"
 
 day = datetime.now() - timedelta(days=1)
 
-args = "?since={}".format(day.strftime("%Y%m%d%H%M%S"))
+#args = "?since={}".format(day.strftime("%Y%m%d%H%M%S"))
+args = "?since=20220806T210000&until=20220807T210000"
 
 url = api+dataset+args
 
@@ -87,7 +88,7 @@ for period in fetch["disruptions"] :
 
                     if delay == 0 and jtem['departure_status'] != 'unchanged':
                         if jtem['arrival_status'] == 'added':
-                            delay = int(tot//jt)
+                            delay = int(total_delay//jt)
                         else:
                             jt -= 1
 
@@ -102,9 +103,9 @@ for period in fetch["disruptions"] :
                         info('Departure delay : ' + str(ddelay))
 
                     info('Delay n°' + str (jt) + ' : ' + str(delay//60) + ' minutes')
-                    if delay>=0: tot += delay
+                    if delay>=0: total_delay += delay
                     else: fail(delay); warning(jtem);
-                    warning('Cumulative delay : ' + str(tot))
+                    warning('Cumulative delay : ' + str(total_delay))
 
                 else:
                     info('Stop deleted for n°' + str(jt))
@@ -117,10 +118,10 @@ for period in fetch["disruptions"] :
 if failure :
     fail('Something bad happened...')
     try:
-        result(jt, delay, deleted)
+        result(jt, total_delay, deleted)
     except Exception as e:
         fail('Resluts failed sith error : ' + str(e))
 
 else:
     success('Success.')
-    result(jt, delay, deleted)
+    result(jt, total_delay, deleted)
