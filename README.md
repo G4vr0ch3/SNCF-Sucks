@@ -1,4 +1,4 @@
-# SNCF-Sucks
+# :robot: SNCF-Sucks
 
 A small bot to demonstrate how the french railway system sucks.
 
