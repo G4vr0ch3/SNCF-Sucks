@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 import urllib.request as request
 from datetime import datetime, timedelta
@@ -19,8 +21,8 @@ dataset = "coverage/sncf/disruptions/"
 
 day = datetime.now() - timedelta(days=1)
 
-#args = "?since={}".format(day.strftime("%Y%m%d%H%M%S"))
-args = "?since=20220806T210000&until=20220807T210000"
+args = "?since={}".format(day.strftime("%Y%m%d%H%M%S"))
+#args = "?since=20220806T210000&until=20220807T210000"
 
 url = api+dataset+args
 
@@ -45,7 +47,9 @@ for period in fetch["disruptions"] :
     objects = period["impacted_objects"]
     pd += 1
     for item in objects:
+        dlist = [0]
         it+=1
+        jt = 0
         try:
             data = item["impacted_stops"]
             for jtem in data:
@@ -71,15 +75,15 @@ for period in fetch["disruptions"] :
                     except:
                         datap += 1
 
-                    if datap == 2: warning('No usable data for n°' + str(jt))
+                    if datap == 2: warning('No usable data for stop n°' + str(jt) + ' for trip n°' + str(it))
 
                     delay = max(adelay, ddelay)
 
-                    if delay == 0 and jtem['departure_status'] != 'unchanged':
+                    if delay == 0 and datap < 2 and jtem['departure_status'] != 'unchanged':
                         if jtem['arrival_status'] == 'added':
-                            delay = int(total_delay//jt)
+                            warning('Train delayed with no data')
                         else:
-                            jt -= 1
+                            pass
 
                     if ddelay < 0:
                         fail('ddelay for n°' + str(jt) +' :\n')
@@ -88,13 +92,10 @@ for period in fetch["disruptions"] :
                         fail('adelay for n°' + str(jt) +' :\n')
                         warning(jtem)
                     else:
-                        info('Arrival delay : ' + str(adelay))
-                        info('Departure delay : ' + str(ddelay))
+                        pass
 
-                    info('Delay n°' + str (jt) + ' : ' + str(delay//60) + ' minutes')
-                    if delay>=0: total_delay += delay
+                    if delay>=0: dlist.append(delay)
                     else: fail(delay); warning(jtem);
-                    warning('Cumulative delay : ' + str(total_delay))
 
                 else:
                     info('Stop deleted for n°' + str(jt))
@@ -104,13 +105,15 @@ for period in fetch["disruptions"] :
         except Exception as e:
             if 'pt_object' not in item: failure = True; fail('Failed with error :' + str(e) + ' | (item) : ' + str(item))
 
+        total_delay += max(dlist)
+
 if failure :
     fail('Something bad happened...')
     try:
-        result(jt, total_delay, deleted)
+        result(it, total_delay, deleted)
     except Exception as e:
         fail('Resluts failed sith error : ' + str(e))
 
 else:
     success('Success.')
-    result(jt, total_delay, deleted)
+    result(it, total_delay, deleted)
