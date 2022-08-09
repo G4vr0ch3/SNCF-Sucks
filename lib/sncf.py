@@ -3,8 +3,33 @@
 import json
 import urllib.request as request
 from datetime import datetime, timedelta
-from .prints import *
 
+
+################################################################################
+#                                    _____ _   _  _____ ______                 #
+#        _____                     / ____| \ | |/ ____|  ____|                 #
+#    ___ |[]|_n__n_I_c           | (___ |  \| | |    | |__                     #
+#   |___||__|###|____}           \___ \| . ` | |    |  __|                     #
+#    O-O--O-O+++--O-O           ____) | |\  | |____| |                         #
+#                             |_____/|_| \_|\_____|_|                          #
+#                                                                              #
+################################################################################
+
+
+if __name__ == "__main__":
+    from prints import *
+    fetch = fetch()
+    data = dissect_data(fetch)
+    result(data)
+
+else:
+    from .prints import *
+
+
+################################################################################
+
+
+header = { 'Authorization' : '' } #W00w that's bad security...
 
 def fetch():
     info('Building request...')
@@ -17,8 +42,6 @@ def fetch():
     args = "?since={}".format(day.strftime("%Y%m%dT%H%M%S"))
 
     url_ = api+dataset+args
-
-    header = { 'Authorization' : '***' } #W00w that's bad security...
 
     req = request.Request(url_, headers=header)
 
@@ -63,13 +86,12 @@ def fetch():
 
 def dissect_data(raw):
 
-    pd, it, jt, total_delay, deleted, failure, UIDS = 0, 0, 0, 0, 0, False, []
+    pd, it, jt, total_delay, deleted, failure = 0, 0, 0, 0, 0, False
 
     info('Analyzing data...')
     for period in raw["disruptions"] :
         objects = period["impacted_objects"]
         pd += 1
-        UIDS.append(period["disruption_id"])
         for item in objects:
             dlist = [0]
             it+=1
@@ -175,8 +197,3 @@ def result(data):
     else:
         success('Success.')
         print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
-
-if __name__ == "__main__":
-    fetch = fetch()
-    data = dissect_data(fetch)
-    result(data)
