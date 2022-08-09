@@ -26,7 +26,7 @@ You see where I am going with this ?
 | :-: | :-: |
 | Compute the total delay on a 24 hour basis | :green_circle: |
 | Get some interesting statistics | :yellow_circle: |
-| Compare the stats with some other company (AirFrance) | :hourglass_flowing_sand: |
+| Compare the stats with some other company (AirFrance) | :yellow_circle: |
 | Create a website that displays this data nicely | :hourglass_flowing_sand: |
 | Make the SNCF service great | :x: |
 

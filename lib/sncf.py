@@ -14,11 +14,36 @@ def fetch():
 
     day = datetime.now() - timedelta(days=1)
 
-    args = "?since={}".format(day.strftime("%Y%m%d%H%M%S"))
+    args = "?since={}".format(day.strftime("%Y%m%dT%H%M%S"))
 
+    url_ = api+dataset+args
+
+    header = { 'Authorization' : '***' } #W00w that's bad security...
+
+    req = request.Request(url_, headers=header)
+
+    # Fething number of entries
+
+    info('Requesting disruption count...')
+    try :
+        res_ = request.urlopen(req)
+    except :
+        fail('Request failed.')
+        exit()
+
+    fetch_ = json.loads(res_.read())
+
+    if fetch_ == '': fail('Data fetch failed.'); exit()
+
+    dis_count = fetch_["pagination"]["total_result"]
+    info(str(dis_count) + ' disruptions found')
+
+    # Fetching all disruptions
+
+    info('Fetching data...')
+
+    args += "&count={}".format(dis_count)
     url = api+dataset+args
-
-    header = { 'Authorization' : '<REDACTED>' } #W00w that's bad security...
 
     req = request.Request(url, headers=header)
 
@@ -29,7 +54,6 @@ def fetch():
         fail('Request failed.')
         exit()
 
-    info('Fetching data...')
     fetch = json.loads(res.read())
 
     if fetch == '': fail('Data fetch failed.'); exit()
@@ -49,14 +73,18 @@ def dissect_data(raw):
         for item in objects:
             dlist = [0]
             it+=1
-            jt = 0
+            jt, deleted_stop = 0, False
             try:
                 data = item["impacted_stops"]
                 miss_data, count_miss = False, 0
                 for jtem in data:
                     if jtem["arrival_status"] != "deleted":
+
+                        # Computing delay at each stop
                         adelay, ddelay, datap = 0, 0, 0
                         jt += 1
+
+                        # Final delay
                         try:
                             afinaltime = int(jtem["amended_arrival_time"])
                             abasetime = int(jtem["base_arrival_time"])
@@ -66,6 +94,8 @@ def dissect_data(raw):
                                 adelay = (afinaltime%100 - abasetime%100) + ((afinaltime//100)%100 - (abasetime//100)%100)*60 + ((afinaltime//10000) - (abasetime//10000))*3600
                         except:
                             datap += 1
+
+                        # Delay on departure (unused)
                         try:
                             dfinaltime = int(jtem["amended_departure_time"])
                             dbasetime = int(jtem["base_departure_time"])
@@ -78,14 +108,17 @@ def dissect_data(raw):
 
                         if datap == 2: miss_data = True; count_miss += 1
 
-                        delay = max(adelay, ddelay)
+                        delay = adelay
 
                         if delay == 0 and datap < 2 and jtem['departure_status'] != 'unchanged':
                             if jtem['arrival_status'] == 'added':
                                 warning('Train delayed with no data')
                             else:
                                 pass
+                        else:
+                            pass
 
+                        # Delay checks
                         if ddelay < 0:
                             fail('ddelay for n°' + str(jt) +' :\n')
                             warning(jtem)
@@ -99,42 +132,49 @@ def dissect_data(raw):
                         else: fail(delay); warning(jtem);
 
                     else:
-                        deleted += 1
+
+                        # Counting deleted trains
+                        deleted_stop = True
 
                 if miss_data:
                     if count_miss == jt :
                         fail('Unusable data for it n°' + str(it))
+                        it -= 1
                     else:
                         warning('Missing data for it n°' + str(it))
+
+                if deleted_stop:
+                    deleted += 1
 
             except Exception as e:
                 if 'impacted_stops' not in str(e): failure = True; fail('Failed with error :' + str(e) + ' | (item) : ' + str(item))
 
+            #Keeping max delay of trip as delay
             total_delay += max(dlist)
 
-    return (total_delay, deleted, failure, UIDS)
+    return (total_delay, deleted, failure, it)
 
 
 def result(data):
 
-    delay, deleted, failure, UIDS = data[0], data[1], data[2], data[3]
+    delay, deleted, failure, it = data[0], data[1], data[2], data[3]
 
-    count = len(set(UIDS))
-    min = delay%60
-    hours = delay//60
+    count = it
+    min = (delay//60)%60
+    hours = (delay-min*60)//3600
     days = hours//24
     hours -= days*24
 
     if failure :
         fail('Something bad happened...')
         try:
-            print('[-] \033[1m\033[93m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
+            print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
         except Exception as e:
             fail('Resluts failed sith error : ' + str(e))
 
     else:
         success('Success.')
-        print('[-] \033[1m\033[93m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
+        print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
 
 if __name__ == "__main__":
     fetch = fetch()
