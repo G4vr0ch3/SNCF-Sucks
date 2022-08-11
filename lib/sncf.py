@@ -18,6 +18,8 @@ from datetime import datetime, timedelta
 
 
 
+
+
 def fetch():
     info('Building request...')
 
@@ -77,6 +79,9 @@ def fetch():
         success('Data fetched in ' + str(elapsed) + 'ms')
 
     return fetch
+
+
+
 
 
 def dissect_data(raw):
@@ -176,7 +181,10 @@ def dissect_data(raw):
     elapsed = time.time() - begin
 
     success('Data analyze completed in ' + str(elapsed) + 'ms')
-    return (total_delay, deleted, failure, it)
+    return trip_data(total_delay, deleted, it, failure, it)
+
+
+
 
 
 def get_all_trips():
@@ -185,23 +193,37 @@ def get_all_trips():
 
 def result(data):
 
-    delay, deleted, failure, it = data[0], data[1], data[2], data[3]
+    secs, deleted, failure, it = data.duration_secs, data.deleted_count, data.data_corruption, data.dataset_size
 
-    count = it
-    min = (delay//60)%60
-    hours = (delay-min*60)//3600
-    days = hours//24
-    hours -= days*24
+
+    avg = convert((secs//it))
+    delay = convert(secs)
+
 
     if failure :
         fail('Something bad happened...')
         try:
-            print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
+            print('[-] \033[1m In 24 hours, ', it, ' journeys were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' trains were deleted.' )
         except Exception as e:
-            fail('Resluts failed sith error : ' + str(e))
+            fail('Resluts failed with error : ' + str(e))
 
     else:
-        print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
+            print('[-] \033[1m In 24 hours, ', it, ' journeys were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' trains were deleted.' )
+
+
+
+
+
+def convert(sec):
+    min = (sec//60)%60
+    hours = (sec-min*60)//3600
+    days = hours//24
+    hours -= days*24
+
+    return (min, hours, days)
+
+
+
 
 
 ################################################################################
@@ -210,6 +232,7 @@ def result(data):
 if __name__ == "__main__":
     from prints import *
     from secrets import *
+    from comparer import *
 
 
     header = { 'Authorization' : sncf_secret() } #W00w that's bad security...
@@ -222,6 +245,7 @@ if __name__ == "__main__":
 else:
     from .prints import *
     from .secrets import *
+    from .comparer import *
 
 
     header = { 'Authorization' : sncf_secret() } #W00w that's bad security...

@@ -18,6 +18,8 @@ from datetime import datetime, timedelta
 
 
 
+
+
 def get_pages(base_url):
 
     url = base_url + "&pageSize=1"
@@ -44,9 +46,13 @@ def get_pages(base_url):
     return count
 
 
+
+
+
 def fetch():
 
     global_data = []
+    effective_count = 0
 
     info('Building request...')
 
@@ -62,7 +68,12 @@ def fetch():
 
     glob_dis_count = get_pages(url)
 
-    pages = glob_dis_count//100 + 1
+
+    if (glob_dis_count%100) > 0 :
+        pages = glob_dis_count//100 + 1
+    else:
+        pages = glob_dis_count//100
+
 
     info('Going through ' + str(pages) + ' pages of data. Fasten your seatbelts.')
 
@@ -87,6 +98,7 @@ def fetch():
                 AF_data = get_AF(fetch)
                 global_data.append(AF_data)
                 success('Fetch n°' + str(fetch["page"]["pageNumber"]) + ' complete')
+                effective_count += 1
 
         except :
             fail('Request failed.')
@@ -95,7 +107,11 @@ def fetch():
 
     success('Data fetched in ' + str(elapsed) + 's')
 
-    return global_data, pages
+    return global_data, effective_count
+
+
+
+
 
 def get_AF(fetch):
 
@@ -108,13 +124,17 @@ def get_AF(fetch):
         # The "AF" check is useless because of the improved query. However, still need a check to take in account completed flights only
         if flight["flightLegs"][0]["completionPercentage"] == "100" :
             AF_flights.append(flight)
-            AF_count += 1
+            AF_count += len(flight["flightLegs"])
         else:
             pass
 
     info('Retrieved ' + str(AF_count) + ' completed AirFrance flights.')
 
     return AF_flights
+
+
+
+
 
 def dissect_data(fetch):
 
@@ -175,27 +195,44 @@ def dissect_data(fetch):
     success('Data analyze completed in ' + str(elapsed) + 's')
     success('Went through ' + str(len(processed_flights)) + ' flights.')
 
-    return total_delay, deleted, failure, it, jt
+    return trip_data(total_delay, deleted, (it, jt), failure)
+
+
+
+
 
 def result(data):
 
-    delay, deleted, failure, it, nat = data[0], data[1], data[2], data[3], data[4]
+    secs, deleted, failure, it, nat = data.duration_secs, data.deleted_count, data.data_corruption, data.dataset_size[0], data.dataset_size[1]
 
-    count = it
-    min = (delay//60)%60
-    hours = (delay-min*60)//3600
-    days = hours//24
-    hours -= days*24
+
+    avg = convert((secs//it))
+    delay = convert(secs)
+
 
     if failure :
         fail('Something bad happened...')
         try:
-            print('[-] \033[1m In 24 hours, ', count, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
+            print('[-] \033[1m In 24 hours, ', it, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' planes were deleted.' )
         except Exception as e:
             fail('Resluts failed with error : ' + str(e))
 
     else:
-            print('[-] \033[1m In 24 hours, ', count, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
+            print('[-] \033[1m In 24 hours, ', it, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' planes were deleted.' )
+
+
+
+
+
+def convert(sec):
+    min = (sec//60)%60
+    hours = (sec-min*60)//3600
+    days = hours//24
+    hours -= days*24
+
+    return (min, hours, days)
+
+
 
 
 
@@ -205,6 +242,7 @@ def result(data):
 if __name__ == "__main__":
     from prints import *
     from secrets import *
+    from comparer import *
 
 
     header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
@@ -217,6 +255,7 @@ if __name__ == "__main__":
 else:
     from .prints import *
     from .secrets import *
+    from .comparer import *
 
 
     header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
