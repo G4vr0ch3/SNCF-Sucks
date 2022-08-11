@@ -15,8 +15,8 @@ To draw a small yet demonstrative comparison :
 | Scenario | I would say that at least 1 in 3 of the trains I took to travel was delay. | Once delayed in the 7 flights I had with the company |
 | Ticket price | 25e to 86e with a 75% discount lucky me. | 106e for the jurney in question. (one-way ticket) |
 | Delay | This goes from insignificant (5 minutes) to pretty long (1 to 3 hours) and even goes as far as requiring to pay for a taxi to get home because it was to late to catch another train. | 4 hours (With a HOP! flight the lowcost company of AirFrance) |
-| Compensation | Should have been 30% of the price of the ticket but nothing, not even an answer to my complain. No compensation nor help regarding the fees engaged because of the delay. | Answered in 22 hours, 250e wired to my account within 3 business days (or I could have taken a 350e voucher). |
-| Side notes | When I missed my connection because of the delay, an employee with an attitude explained to me how I was going to have to wait for 4 more hours if I wanted to be seated or I could take my chances with the next train in an hour with no guarantee. When the train was so late we could not go back home with public transportation because it was late at night, the two employees kicked us out of the train station 2 minutes after the train arrived because they where closing. In every case, no employee cares. | Smiling and concerned personnel, offering drinks and snacks, going through every person with a missed connection to propose a solution. Support at the airport at midnight. Just great people. |
+| Compensation | Should have been 30% of the price of the ticket but nothing, not even an answer to my complain. No compensation nor help regarding the fees engaged because of the delay. | Answered in 22 hours, 250e wired to my account (or I could have taken a 350e voucher). |
+| Side notes | Employees don't care, often served with an attitude. Poor service. | Kind human beings, helpful and caring. |
 
 You see where I am going with this ?
 
@@ -26,7 +26,7 @@ You see where I am going with this ?
 | :-: | :-: |
 | Compute the total delay on a 24 hour basis | :green_circle: |
 | Get some interesting statistics | :yellow_circle: |
-| Compare the stats with some other company (AirFrance) | :yellow_circle: |
+| Compare the stats with some other company (AirFrance) | :green_circle: |
 | Create a website that displays this data nicely | :hourglass_flowing_sand: |
 | Make the SNCF service great | :x: |
 

@@ -1,33 +1,22 @@
 #!/usr/bin/env python3
 
 import json
+import time
 import urllib.request as request
 from datetime import datetime, timedelta
 
 
 ################################################################################
-#           _                   _      ______                                  #
-#          -\`\           /\   (_)    |  ____|                                 #
-#     |\ ____\_\__       /  \   _ _ __| |__ _ __ __ _ _ __   ___ ___           #
-#   -=\c`""""""" "`)    / /\ \ | | '__|  __| '__/ _` | '_ \ / __/ _ \          #
-#      `~~~~~/ /~~`    / ____ \| | |  | |  | | | (_| | | | | (_|  __/          #
+#           _                        _      ______                             #
+#          -\`\               /\   (_)    |  ____|                             #
+#     |\ ____\_\__          /  \   _ _ __| |__ _ __ __ _ _ __   ___ ___        #
+#   -=\c`""""""" "`)      / /\ \ | | '__|  __| '__/ _` | '_ \ / __/ _ \        #
+#      `~~~~~/ /~~`     / ____ \| | |  | |  | | | (_| | | | | (_|  __/         #
 #         -=/ /       /_/    \_\_|_|  |_|  |_|  \__,_|_| |_|\___\___|          #
 #          '-'                                                                 #
 ################################################################################
 
 
-if __name__ == "__main__":
-    from prints import *
-    result(dissect_data(fetch()))
-
-else:
-    from .prints import *
-
-
-################################################################################
-
-
-header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : '' } #W00w that's bad security...
 
 def get_pages(base_url):
 
@@ -77,8 +66,9 @@ def fetch():
 
     info('Going through ' + str(pages) + ' pages of data. Fasten your seatbelts.')
 
+    begin = time.time()
+
     for page_number in range(pages):
-#    for page_number in range(3):
 
         info('Going through page n°' + str(page_number))
 
@@ -100,6 +90,9 @@ def fetch():
         except :
             fail('Request failed.')
 
+    elapsed = time.time() - begin
+
+    success('Data fetched in ' + str(elapsed) + 'ms')
 
     return global_data, pages
 
@@ -126,9 +119,15 @@ def dissect_data(fetch):
 
     it, total_delay, deleted, trip_delays, processed_flights, failure = 0, 0, 0, [], [], False
 
+    info('Analyzing data...')
+
+    begin = time.time()
+
     for page in range(pages):
 
         for flight in raw[page]:
+
+            trip_delays = []
 
             if flight["flightNumber"] in processed_flights:
                 pass
@@ -148,14 +147,22 @@ def dissect_data(fetch):
 
                         adelay = data["arrivalDateTimeDifference"]
 
-                        if adelay == "PT0S" :
-                            pass
-
+                        if adelay == "PT0S" or "-" in adelay:
+                            trip_delays.append(0)
                         else:
                             adelay = int(''.join(''.join(''.join(adelay.split("PT")).split("H")).split("M")))
                             trip_delays.append((adelay//100)*3600 + (adelay%100)*60)
 
-                total_delay += max(trip_delays)
+                    if trip_delays == [0]:
+                        # Means the plane was not late in the end
+                        it -= 1
+
+                if max(trip_delays) > 0 :
+                    total_delay += max(trip_delays)
+
+    elapsed = time.time() - begin
+
+    success('Data analyze completed in ' + str(elapsed) + 'ms')
 
     return total_delay, deleted, failure, it
 
@@ -177,5 +184,32 @@ def result(data):
             fail('Resluts failed sith error : ' + str(e))
 
     else:
-        success('Success.')
         print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
+
+
+
+################################################################################
+
+
+if __name__ == "__main__":
+    from prints import *
+    from secrets import *
+
+
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
+
+
+    fetch = fetch()
+    data = dissect_data(fetch)
+    result(data)
+
+else:
+    from .prints import *
+    from .secrets import *
+
+
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
+
+
+
+################################################################################

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import time
 import urllib.request as request
 from datetime import datetime, timedelta
 
@@ -16,20 +17,6 @@ from datetime import datetime, timedelta
 ################################################################################
 
 
-if __name__ == "__main__":
-    from prints import *
-    fetch = fetch()
-    data = dissect_data(fetch)
-    result(data)
-
-else:
-    from .prints import *
-
-
-################################################################################
-
-
-header = { 'Authorization' : '' } #W00w that's bad security...
 
 def fetch():
     info('Building request...')
@@ -65,6 +52,8 @@ def fetch():
 
     info('Fetching data...')
 
+    begin = time.time()
+
     args += "&count={}".format(dis_count)
     url = api+dataset+args
 
@@ -79,7 +68,13 @@ def fetch():
 
     fetch = json.loads(res.read())
 
-    if fetch == '': fail('Data fetch failed.'); exit()
+    elapsed = time.time() - begin
+
+    if fetch == '':
+        fail('Data fetch failed.')
+        exit()
+    else:
+        success('Data fetched in ' + str(elapsed) + 'ms')
 
     return fetch
 
@@ -89,6 +84,9 @@ def dissect_data(raw):
     pd, it, jt, total_delay, deleted, failure = 0, 0, 0, 0, 0, False
 
     info('Analyzing data...')
+
+    begin = time.time()
+
     for period in raw["disruptions"] :
         objects = period["impacted_objects"]
         pd += 1
@@ -160,10 +158,11 @@ def dissect_data(raw):
 
                 if miss_data:
                     if count_miss == jt :
-                        fail('Unusable data for it n°' + str(it))
+                        # Unusable data
                         it -= 1
                     else:
-                        warning('Missing data for it n°' + str(it))
+                        # Missing data
+                        pass
 
                 if deleted_stop:
                     deleted += 1
@@ -171,10 +170,17 @@ def dissect_data(raw):
             except Exception as e:
                 if 'impacted_stops' not in str(e): failure = True; fail('Failed with error :' + str(e) + ' | (item) : ' + str(item))
 
-            #Keeping max delay of trip as delay
+            # Keeping max delay of trip as delay
             total_delay += max(dlist)
 
+    elapsed = time.time() - begin
+
+    success('Data analyze completed in ' + str(elapsed) + 'ms')
     return (total_delay, deleted, failure, it)
+
+
+def get_all_trips():
+    print('Not yet...')
 
 
 def result(data):
@@ -195,5 +201,31 @@ def result(data):
             fail('Resluts failed sith error : ' + str(e))
 
     else:
-        success('Success.')
         print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' trains were deleted. SNCF Sucks.' )
+
+
+################################################################################
+
+
+if __name__ == "__main__":
+    from prints import *
+    from secrets import *
+
+
+    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
+
+
+    fetch = fetch()
+    data = dissect_data(fetch)
+    result(data)
+
+else:
+    from .prints import *
+    from .secrets import *
+
+
+    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
+
+
+
+################################################################################
