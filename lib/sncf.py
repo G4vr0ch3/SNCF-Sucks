@@ -212,7 +212,7 @@ if __name__ == "__main__":
     from secrets import *
 
 
-    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
+    header = { 'Authorization' : sncf_secret() } #W00w that's bad security...
 
 
     fetch = fetch()
@@ -224,7 +224,7 @@ else:
     from .secrets import *
 
 
-    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
+    header = { 'Authorization' : sncf_secret() } #W00w that's bad security...
 
 
 

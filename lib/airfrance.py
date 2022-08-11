@@ -24,7 +24,7 @@ def get_pages(base_url):
 
     req = request.Request(url, headers=header)
 
-    info('Retrieving data disruption count...')
+    info('Retrieving data count...')
 
     try :
         res = request.urlopen(req)
@@ -39,7 +39,7 @@ def get_pages(base_url):
 
     count = fetch["page"]['fullCount']
 
-    info('Retrived ' + str(count) + ' disruptions.')
+    info('Retrived ' + str(count) + ' flights carried by AirFrance.')
 
     return count
 
@@ -72,7 +72,8 @@ def fetch():
 
         info('Going through page n°' + str(page_number))
 
-        args += "pageSize=100&pageNumber={}".format(page_number)
+        url = api + dataset + args + "&pageSize=100&pageNumber={}".format(page_number)
+
         req = request.Request(url, headers=header)
 
         try :
@@ -85,31 +86,33 @@ def fetch():
             else:
                 AF_data = get_AF(fetch)
                 global_data.append(AF_data)
-                success('Fetch n°' + str(page_number) + ' complete')
+                success('Fetch n°' + str(fetch["page"]["pageNumber"]) + ' complete')
 
         except :
             fail('Request failed.')
 
     elapsed = time.time() - begin
 
-    success('Data fetched in ' + str(elapsed) + 'ms')
+    success('Data fetched in ' + str(elapsed) + 's')
 
     return global_data, pages
 
 def get_AF(fetch):
 
     AF_flights = []
+    AF_count = 0
 
     flights = fetch["operationalFlights"]
 
     for flight in flights:
         # The "AF" check is useless because of the improved query. However, still need a check to take in account completed flights only
-        if flight["airline"]["code"] == "AF" and flight["flightLegs"][0]["completionPercentage"] == "100" :
+        if flight["flightLegs"][0]["completionPercentage"] == "100" :
             AF_flights.append(flight)
+            AF_count += 1
         else:
             pass
 
-    info('Retrieved ' + str(len(AF_flights)) + ' AirFrance flights.')
+    info('Retrieved ' + str(AF_count) + ' completed AirFrance flights.')
 
     return AF_flights
 
@@ -117,7 +120,7 @@ def dissect_data(fetch):
 
     raw, pages = fetch[0], fetch[1]
 
-    it, total_delay, deleted, trip_delays, processed_flights, failure = 0, 0, 0, [], [], False
+    it, jt, total_delay, deleted, trip_delays, processed_flights, failure = 0, 0, 0, 0, [], [], False
 
     info('Analyzing data...')
 
@@ -127,7 +130,8 @@ def dissect_data(fetch):
 
         for flight in raw[page]:
 
-            trip_delays = []
+            trip_delays = [0]
+            nat = False
 
             if flight["flightNumber"] in processed_flights:
                 pass
@@ -139,36 +143,43 @@ def dissect_data(fetch):
                 flight_data = flight["flightLegs"]
 
                 for data in flight_data:
+
                     if data["status"] == "C":
                         deleted += 1
 
                     elif "arrivalDateTimeDifference" in data:
-                        it += 1
 
                         adelay = data["arrivalDateTimeDifference"]
 
                         if adelay == "PT0S" or "-" in adelay:
-                            trip_delays.append(0)
+                            pass
                         else:
                             adelay = int(''.join(''.join(''.join(adelay.split("PT")).split("H")).split("M")))
                             trip_delays.append((adelay//100)*3600 + (adelay%100)*60)
 
-                    if trip_delays == [0]:
-                        # Means the plane was not late in the end
-                        it -= 1
+                    if data["departureInformation"]["airport"]["city"]["country"]["code"] == "FR" and data["arrivalInformation"]["airport"]["city"]["country"]["code"] == "FR":
+                        nat = True
+
 
                 if max(trip_delays) > 0 :
                     total_delay += max(trip_delays)
 
+                    if nat:
+                        jt += 1
+
+                    it += 1
+
+
     elapsed = time.time() - begin
 
-    success('Data analyze completed in ' + str(elapsed) + 'ms')
+    success('Data analyze completed in ' + str(elapsed) + 's')
+    success('Went through ' + str(len(processed_flights)) + ' flights.')
 
-    return total_delay, deleted, failure, it
+    return total_delay, deleted, failure, it, jt
 
 def result(data):
 
-    delay, deleted, failure, it = data[0], data[1], data[2], data[3]
+    delay, deleted, failure, it, nat = data[0], data[1], data[2], data[3], data[4]
 
     count = it
     min = (delay//60)%60
@@ -179,12 +190,12 @@ def result(data):
     if failure :
         fail('Something bad happened...')
         try:
-            print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
+            print('[-] \033[1m In 24 hours, ', count, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
         except Exception as e:
-            fail('Resluts failed sith error : ' + str(e))
+            fail('Resluts failed with error : ' + str(e))
 
     else:
-        print('[-] \033[1m In 24 hours, ', count, ' journeys were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
+            print('[-] \033[1m In 24 hours, ', count, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', days, ' days, ', hours, ' hours and ', min, ' minutes. ', deleted, ' planes were deleted.' )
 
 
 
@@ -196,7 +207,7 @@ if __name__ == "__main__":
     from secrets import *
 
 
-    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
 
 
     fetch = fetch()
@@ -208,7 +219,7 @@ else:
     from .secrets import *
 
 
-    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
 
 
 
