@@ -22,13 +22,13 @@ You see where I am going with this ?
 
 ## The ultimate goal ?
 
-| Idea | Status |
-| :-: | :-: |
-| Compute the total delay on a 24 hour basis | :green_circle: |
-| Get some interesting statistics | :yellow_circle: |
-| Compare the stats with some other company (AirFrance) | :yellow_circle: |
-| Create a website that displays this data nicely | :hourglass_flowing_sand: |
-| Make the SNCF service great | :x: |
+| Idea | Status | Info |
+| :-: | :-: | :-: |
+| Compute the total delay on a 24 hour basis | :green_circle: | lib/sncf.py |
+| Get some interesting statistics | :yellow_circle: | Failing to retrieve global trip counts |
+| Compare the stats with some other company (AirFrance) | :green_circle: | Total delay retrieved, questioning data integrity |
+| Create a website that displays this data nicely | :hourglass_flowing_sand: | | 
+| Make the SNCF service great | :x: | |
 
 ## Support
 
