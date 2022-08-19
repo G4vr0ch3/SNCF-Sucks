@@ -8,6 +8,9 @@ def success(text):
 def info(text):
     print('[*] \033[96m',text, '\033[0m')
 
+def infor(text):
+    print('[*] \033[96m',text, '\033[0m', end = '\r')
+
 def warning(text):
     print('[+] \033[93m',text, '\033[0m')
 

@@ -70,18 +70,18 @@ def fetch():
 
 
     if (glob_dis_count%100) > 0 :
-        pages = glob_dis_count//100 + 1
+        pages = glob_dis_count//100
     else:
         pages = glob_dis_count//100
 
 
-    info('Going through ' + str(pages) + ' pages of data. Fasten your seatbelts.')
+    info('Going through ' + str(pages + 1) + ' pages of data. Fasten your seatbelts.')
 
     begin = time.time()
 
-    for page_number in range(pages):
+    for page_number in range(pages + 1):
 
-        info('Going through page n°' + str(page_number))
+        infor('Going through page ' + str(page_number + 1) + '/' + str(pages + 1) + '...')
 
         url = api + dataset + args + "&pageSize=100&pageNumber={}".format(page_number)
 
@@ -93,19 +93,21 @@ def fetch():
             fetch = json.loads(res.read())
 
             if fetch == '':
+                print()
                 fail('Data fetch failed.')
             else:
                 AF_data = get_AF(fetch)
                 global_data.append(AF_data)
-                success('Fetch n°' + str(fetch["page"]["pageNumber"]) + ' complete')
                 effective_count += 1
 
         except :
+            print()
             fail('Request failed.')
 
     elapsed = time.time() - begin
 
-    success('Data fetched in ' + str(elapsed) + 's')
+    print()
+    success('Data fetched in ' + str(round(elapsed, 2)) + 's')
 
     return global_data, effective_count
 
@@ -127,8 +129,6 @@ def get_AF(fetch):
             AF_count += len(flight["flightLegs"])
         else:
             pass
-
-    info('Retrieved ' + str(AF_count) + ' completed AirFrance flights.')
 
     return AF_flights
 
@@ -192,10 +192,10 @@ def dissect_data(fetch):
 
     elapsed = time.time() - begin
 
-    success('Data analyze completed in ' + str(elapsed) + 's')
+    success('Data analyze completed in ' + str(round(elapsed, 2)) + 's')
     success('Went through ' + str(len(processed_flights)) + ' flights.')
 
-    return trip_data(total_delay, deleted, (it, jt), failure)
+    return trip_data(total_delay, deleted, (it, jt), failure, len(processed_flights))
 
 
 
