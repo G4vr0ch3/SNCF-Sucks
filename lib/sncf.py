@@ -2,8 +2,13 @@
 
 import json
 import time
+
 import urllib.request as request
+
 from datetime import datetime, timedelta
+from PetitPrinc3.libs.spinner import spinner
+from PetitPrinc3.libs.prints import *
+
 
 
 ################################################################################
@@ -15,8 +20,6 @@ from datetime import datetime, timedelta
 #                                  |_____/|_| \_|\_____|_|                     #
 #                                                                              #
 ################################################################################
-
-
 
 
 
@@ -61,23 +64,22 @@ def fetch():
     info('Going through {} pages of data. Go grab a 3$ 33cl bottle at the bar !'.format(pages + 1))
 
     for page_number in range(pages + 1):
-        infor('Fetching disruptions on page {}/{}...'.format(page_number + 1, pages + 1))
+        with spinner('Fetching disruptions on page {}/{}...'.format(page_number + 1, pages + 1)):
+            url = api+dataset+args+"&count=1000&start_page={}".format(page_number)
 
-        url = api+dataset+args+"&count=1000&start_page={}".format(page_number)
+            req = request.Request(url, headers=header)
 
-        req = request.Request(url, headers=header)
+            try :
+                res = request.urlopen(req)
+            except :
+                print()
+                fail('Request failed.')
+                exit()
 
-        try :
-            res = request.urlopen(req)
-        except :
-            print()
-            fail('Request failed.')
-            exit()
+            fetch_ = json.loads(res.read())
 
-        fetch_ = json.loads(res.read())
-
-        for disruption in fetch_["disruptions"]:
-            fetch.append(disruption)
+            for disruption in fetch_["disruptions"]:
+                fetch.append(disruption)
 
     if fetch == []:
         print()
@@ -303,7 +305,6 @@ def get_all_trips():
 
 
 if __name__ == "__main__":
-    from prints import *
     from secrets import *
     from comparer import *
 
@@ -321,7 +322,6 @@ if __name__ == "__main__":
 #    print(get_all_trips())
 
 else:
-    from .prints import *
     from .secrets import *
     from .comparer import *
 

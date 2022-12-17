@@ -2,8 +2,13 @@
 
 import json
 import time
+
 import urllib.request as request
+
 from datetime import datetime, timedelta
+from PetitPrinc3.libs.spinner import spinner
+from PetitPrinc3.libs.prints import *
+
 
 
 ################################################################################
@@ -15,8 +20,6 @@ from datetime import datetime, timedelta
 #         -=/ /       /_/    \_\_|_|  |_|  |_|  \__,_|_| |_|\___\___|          #
 #          '-'                                                                 #
 ################################################################################
-
-
 
 
 
@@ -81,28 +84,28 @@ def fetch():
 
     for page_number in range(pages + 1):
 
-        infor('Going through page ' + str(page_number + 1) + '/' + str(pages + 1) + '...')
+        with spinner('Going through page ' + str(page_number + 1) + '/' + str(pages + 1) + '...'):
 
-        url = api + dataset + args + "&pageSize=100&pageNumber={}".format(page_number)
+            url = api + dataset + args + "&pageSize=100&pageNumber={}".format(page_number)
 
-        req = request.Request(url, headers=header)
+            req = request.Request(url, headers=header)
 
-        try :
-            res = request.urlopen(req)
+            try :
+                res = request.urlopen(req)
 
-            fetch = json.loads(res.read())
+                fetch = json.loads(res.read())
 
-            if fetch == '':
+                if fetch == '':
+                    print()
+                    fail('Data fetch failed.')
+                else:
+                    AF_data = get_AF(fetch)
+                    global_data.append(AF_data)
+                    effective_count += 1
+
+            except :
                 print()
-                fail('Data fetch failed.')
-            else:
-                AF_data = get_AF(fetch)
-                global_data.append(AF_data)
-                effective_count += 1
-
-        except :
-            print()
-            fail('Request failed.')
+                fail('Request failed.')
 
     elapsed = time.time() - begin
 
