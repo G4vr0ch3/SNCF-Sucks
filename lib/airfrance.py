@@ -6,11 +6,11 @@ import time
 import urllib.request as request
 
 from datetime import datetime, timedelta
-from PetitPrinc3.libs.spinner import spinner
-from PetitPrinc3.libs.prints import *
+from lib.spinner import spinner
+from lib.prints import *
 
 
-
+banner = """
 ################################################################################
 #           _                   _      ______                                  #
 #          -\`\           /\   (_)    |  ____|                                 #
@@ -20,7 +20,7 @@ from PetitPrinc3.libs.prints import *
 #         -=/ /       /_/    \_\_|_|  |_|  |_|  \__,_|_| |_|\___\___|          #
 #          '-'                                                                 #
 ################################################################################
-
+"""
 
 
 def get_pages(base_url):
@@ -47,9 +47,6 @@ def get_pages(base_url):
     info('Retrived ' + str(count) + ' flights carried by AirFrance.')
 
     return count
-
-
-
 
 
 def fetch():
@@ -115,9 +112,6 @@ def fetch():
     return global_data, effective_count
 
 
-
-
-
 def get_AF(fetch):
 
     AF_flights = []
@@ -134,9 +128,6 @@ def get_AF(fetch):
             pass
 
     return AF_flights
-
-
-
 
 
 def dissect_data(fetch):
@@ -201,9 +192,6 @@ def dissect_data(fetch):
     return trip_data(total_delay, deleted, (it, jt), failure, len(processed_flights))
 
 
-
-
-
 def result(data):
 
     secs, deleted, failure, it, nat = data.duration_secs, data.deleted_count, data.data_corruption, data.dataset_size[0], data.dataset_size[1]
@@ -224,9 +212,6 @@ def result(data):
             print('[-] \033[1m In 24 hours, ', it, ' journeys including ' + str(nat) + ' national flights were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' planes were deleted.' )
 
 
-
-
-
 def convert(sec):
     min = (sec//60)%60
     hours = (sec-min*60)//3600
@@ -236,33 +221,24 @@ def convert(sec):
     return (min, hours, days)
 
 
-
-
-
 ################################################################################
 
 
 if __name__ == "__main__":
-    from prints import *
-    from secrets import *
+    from secrets import airfrance_secret
     from comparer import *
 
-
-    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
-
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
 
     fetch = fetch()
     data = dissect_data(fetch)
     result(data)
 
 else:
-    from .prints import *
-    from .secrets import *
+    from .secrets import airfrance_secret
     from .comparer import *
 
-
-    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret() } #W00w that's bad security...
-
+    header = { 'Accept-Language' : 'en-GB', 'Accept' : 'application/hal+json', 'Api-Key' : airfrance_secret } #W00w that's bad security...
 
 
 ################################################################################

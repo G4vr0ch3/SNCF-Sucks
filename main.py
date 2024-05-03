@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pyfiglet import figlet_format as pfg
 from lib.prints import *
 from lib import sncf, airfrance, comparer
 
@@ -25,7 +24,7 @@ def main():
 
     print('\n\n\n')
 
-    print(pfg('SNCF'))
+    print(sncf.banner)
 
     print('\n\n\n')
 
@@ -40,7 +39,7 @@ def main():
 
     print('\n\n\n')
 
-    print(pfg('AirFrance'))
+    print(airfrance.banner)
 
     print('\n\n\n')
 

@@ -6,11 +6,11 @@ import time
 import urllib.request as request
 
 from datetime import datetime, timedelta
-from PetitPrinc3.libs.spinner import spinner
-from PetitPrinc3.libs.prints import *
+from lib.spinner import spinner
+from lib.prints import *
 
 
-
+banner = """
 ################################################################################
 #                                    _____ _   _  _____ ______                 #
 #        _____                      / ____| \ | |/ ____|  ____|                #
@@ -20,7 +20,7 @@ from PetitPrinc3.libs.prints import *
 #                                  |_____/|_| \_|\_____|_|                     #
 #                                                                              #
 ################################################################################
-
+"""
 
 
 def fetch():
@@ -92,9 +92,6 @@ def fetch():
         success('Data fetched in ' + str(round(elapsed, 2)) + 's')
 
     return fetch
-
-
-
 
 
 def dissect_data(raw):
@@ -209,9 +206,6 @@ def dissect_data(raw):
     return trip_data(total_delay, deleted, it, failure, gcount)
 
 
-
-
-
 def result(data):
 
     secs, deleted, failure, it = data.duration_secs, data.deleted_count, data.data_corruption, data.dataset_size
@@ -232,9 +226,6 @@ def result(data):
             print('[-] \033[1m In 24 hours, ', it, ' journeys were disrupted for a total of ', delay[2], ' days, ', delay[1], ' hours and ', delay[0], ' minutes, for an average delay of ', avg[2], ' days, ', avg[1], ' hours and ', avg[0], 'minutes. ', deleted, ' trains were deleted.' )
 
 
-
-
-
 def convert(sec):
     min = (sec//60)%60
     hours = (sec-min*60)//3600
@@ -242,9 +233,6 @@ def convert(sec):
     hours -= days*24
 
     return (min, hours, days)
-
-
-
 
 
 def fetch_type(raw):
@@ -260,9 +248,6 @@ def fetch_type(raw):
                 pass
 
     return types
-
-
-
 
 
 def get_all_trips():
@@ -298,36 +283,25 @@ def get_all_trips():
     return dis_count
 
 
-
-
-
 ################################################################################
 
 
 if __name__ == "__main__":
-    from secrets import *
+    from secrets import sncf_secret
     from comparer import *
 
-
-    header = { 'Authorization' : sncf_secret() } #W00w that's bad security...
-
+    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
 
     fetch = fetch()
     data = dissect_data(fetch)
 
     result(data)
 
-#    print(fetch_type(fetch))
-
-#    print(get_all_trips())
-
 else:
-    from .secrets import *
+    from .secrets import  sncf_secret
     from .comparer import *
 
-
-    header = { 'Authorization' : sncf_secret() } #W00w that's bad security...
-
+    header = { 'Authorization' : sncf_secret } #W00w that's bad security...
 
 
 ################################################################################

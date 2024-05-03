@@ -1,7 +1,4 @@
 # Secrets for SNCF-Sucks
 
-def sncf_secret():
-    return '' # Return API Key
-
-def airfrance_secret():
-    return '' # Return API Key
+sncf_secret = '' # Return API Key
+airfrance_secret = '' # Return API Key
