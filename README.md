@@ -1,3 +1,5 @@
+> :info: This project is discontinued and will not receive real updates anymore.
+
 # :robot: SNCF Sucks
 
 A small bot to demonstrate how the french railway system sucks.
@@ -26,8 +28,8 @@ You see where I am going with this ?
 | :-: | :-: | :-: |
 | Compute the total delay on a 24 hour basis | :green_circle: | lib/sncf.py |
 | Get some interesting statistics | :green_circle: | lib/comparer.py |
-| Compare the stats with some other company (AirFrance) | :yellow_circle: | Questioning data integrity (Only 700 flights a day ?!) |
-| Create a website that displays this data nicely | :hourglass_flowing_sand: | Kinda need to learn CSS. |
+| Compare the stats with some other company (AirFrance) | :green_circle: | Questioning data integrity (Only 700 flights a day ?!) |
+| Create a website that displays this data nicely | :x: | Kinda need to learn CSS. |
 | Make the SNCF service great | :x: | |
 
 ## Support
