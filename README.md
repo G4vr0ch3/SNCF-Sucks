@@ -1,4 +1,4 @@
-> :info: This project is discontinued and will not receive real updates anymore.
+> :information_source: This project is discontinued and will not receive real updates anymore.
 
 # :robot: SNCF Sucks
 
