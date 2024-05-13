@@ -4,7 +4,7 @@
 
 A small bot to demonstrate how the french railway system sucks.
 
-> :warning: You might find in the source code my API key for the SNCF API, please use your own as it is limited. (creating one is fairly easy !)
+> :warning: You might find in the source code my API key for the SNCF/AF API, please use your own as it is limited. (creating one is fairly easy !)
 
 ## Why ?
 
